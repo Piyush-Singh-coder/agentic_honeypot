@@ -2,14 +2,14 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 
 class Message(BaseModel):
-    sender: str  # "scammer" or "user"
-    text: str
-    timestamp: str
+    sender: Optional[str] = "unknown"
+    text: Optional[str] = ""
+    timestamp: Optional[str] = ""
 
 class IncomingMessage(BaseModel):
     sessionId: str
     message: Message
-    conversationHistory: List[Message] = []
+    conversationHistory: Optional[List[Message]] = []
     metadata: Optional[Dict[str, str]] = None
 
 class AgentResponse(BaseModel):
