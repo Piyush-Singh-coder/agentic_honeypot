@@ -7,8 +7,8 @@ class Message(BaseModel):
     timestamp: Optional[str] = ""
 
 class IncomingMessage(BaseModel):
-    sessionId: str
-    message: Message
+    sessionId: Optional[str] = "default-session"
+    message: Optional[Message] = Field(default_factory=lambda: Message(sender="unknown", text="", timestamp=""))
     conversationHistory: Optional[List[Message]] = []
     metadata: Optional[Dict[str, str]] = None
 
