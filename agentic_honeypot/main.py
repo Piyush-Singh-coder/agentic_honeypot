@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Header, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -64,7 +65,7 @@ async def analyze_message(data: Dict[str, Any], api_key: str = Depends(verify_ap
 async def root():
     return {"message": "Agentic Honey-Pot is running. POST to /analyze"}
 
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
 @app.post("/", response_model=AgentResponse)
 async def root_analyze(data: Dict[str, Any], api_key: str = Depends(verify_api_key)):
