@@ -22,7 +22,8 @@ def process_message(data: IncomingMessage) -> AgentResponse:
         sessions[session_id] = {
             "history": [],
             "scamDetected": is_scam,
-            "messageCount": 0
+            "messageCount": 0,
+            "callbackSent": False
         }
         # If passed history is empty, start fresh. If passed history exists (e.g. restart), trust it?
         # The prompt says 6.1 First Message has empty history.
@@ -39,7 +40,7 @@ def process_message(data: IncomingMessage) -> AgentResponse:
     # OR maintain our own. The prompt implies we receive the history.
     # Let's rely on the incoming `conversationHistory` + the new `message`.
     
-    current_history = data.conversationHistory
+    current_history = list(data.conversationHistory)  # Copy to avoid mutation
     current_history.append(data.message)
     
     # Update our session count
@@ -64,7 +65,7 @@ def process_message(data: IncomingMessage) -> AgentResponse:
         # Check if we should send callback
         # We send callback if we have exchanged enough messages.
         # totalMessagesExchanged includes the one we just received + our reply (implied)
-        if session["messageCount"] >= MAX_TURNS_BEFORE_CALLBACK:
+        if session["messageCount"] >= MAX_TURNS_BEFORE_CALLBACK and not session["callbackSent"]:
             # Extract Intelligence
             # We include our new reply in the analysis? Maybe.
             full_history = current_history + [Message(sender="user", text=reply_text, timestamp="now")]
@@ -89,9 +90,12 @@ def process_message(data: IncomingMessage) -> AgentResponse:
                 # We interpret strict "Mandatory" as "Try to send".
             except Exception as e:
                 print(f"Failed to send callback: {e}")
+            
+            # Mark callback as sent
+            session["callbackSent"] = True
 
         return AgentResponse(status="success", reply=reply_text)
     else:
         # Not a scam, return generic or empty?
         # The prompt implies we engage scammers.
-        return AgentResponse(status="success", reply="This system is optimized for scam detection. No scam detected.")
+        return AgentResponse(status="success", reply="Thank you for your message. How can I help you today?")
